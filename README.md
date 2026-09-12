@@ -73,6 +73,8 @@ npx tsx scripts/test-engine.ts        # imprime resumen, clasificación y sugere
 
 ## Publicar en Vercel + Neon (sincronización real PC ↔ móvil)
 
+> Paso a paso con una comprobación en cada etapa (Neon, tablas, Blob, variables y primer acceso): **[DESPLIEGUE.md](DESPLIEGUE.md)**. Si la URL del proyecto responde 404, revisa primero que el despliegue incluya `app/layout.tsx`, `app/page.tsx` y `app/globals.css`.
+
 ### 1. Repositorio
 
 Sube esta carpeta a GitHub (o GitLab/Bitbucket).

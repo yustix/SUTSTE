@@ -6,10 +6,11 @@ import { Icon } from "./Icon";
 interface Props {
   needsSetup: boolean;
   backend: string;
+  warning?: string;
   onAuthenticated: () => void;
 }
 
-export function AuthGate({ needsSetup, backend, onAuthenticated }: Props) {
+export function AuthGate({ needsSetup, backend, warning, onAuthenticated }: Props) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -132,6 +133,12 @@ export function AuthGate({ needsSetup, backend, onAuthenticated }: Props) {
         {error && (
           <div className="notice err" style={{ marginTop: 12 }}>
             {error}
+          </div>
+        )}
+
+        {warning && (
+          <div className="notice warn" style={{ marginTop: 12 }}>
+            {warning}
           </div>
         )}
 

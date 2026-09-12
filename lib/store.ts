@@ -23,6 +23,8 @@ interface LocalShape {
 
 export interface Store {
   kind: "neon" | "local";
+  /** true cuando no se puede escribir (p. ej. Vercel sin DATABASE_URL). */
+  readOnly: boolean;
   /* usuarios */
   getUserByEmail(email: string): Promise<Row | null>;
   getUserById(id: string): Promise<Row | null>;
@@ -48,10 +50,23 @@ export interface Store {
 
 /* ------------------------------- helpers -------------------------- */
 
-function ensureDirs() {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+/**
+ * Crea las carpetas de desarrollo. Devuelve false cuando el sistema de archivos
+ * es de solo lectura (Vercel, contenedores inmutables), para no reventar la app.
+ */
+function ensureDirs(): boolean {
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    return true;
+  } catch {
+    return false;
+  }
 }
+
+const READ_ONLY_MESSAGE =
+  "Este despliegue no tiene DATABASE_URL, así que no hay dónde guardar los datos (en Vercel el disco es de solo lectura). " +
+  "Crea una base en Neon, pega DATABASE_URL en las variables de entorno y vuelve a desplegar.";
 
 function readLocal(): LocalShape {
   ensureDirs();
@@ -68,8 +83,12 @@ let writeQueue: Promise<void> = Promise.resolve();
 function writeLocal(db: LocalShape) {
   const data = JSON.stringify(db, null, 0);
   writeQueue = writeQueue.then(() => {
-    ensureDirs();
-    fs.writeFileSync(DB_FILE, data, "utf8");
+    try {
+      if (!ensureDirs()) return;
+      fs.writeFileSync(DB_FILE, data, "utf8");
+    } catch (e) {
+      console.error("[store] no se pudo escribir la base local:", e);
+    }
   });
   return writeQueue;
 }
@@ -146,6 +165,7 @@ function makeNeonStore(url: string): Store {
 
   return {
     kind: "neon",
+    readOnly: false,
 
     async getUserByEmail(email) {
       const rows = await sql("SELECT * FROM users WHERE email = $1 LIMIT 1", [email]);
@@ -306,9 +326,13 @@ function blankDoc(): Row {
 }
 
 function makeLocalStore(): Store {
-  ensureDirs();
+  const writable = ensureDirs();
+  const requireWritable = () => {
+    if (!writable) throw new Error(READ_ONLY_MESSAGE);
+  };
   return {
     kind: "local",
+    readOnly: !writable,
 
     async getUserByEmail(email) {
       const db = readLocal();
@@ -322,6 +346,7 @@ function makeLocalStore(): Store {
       return readLocal().users.length;
     },
     async createUser(u) {
+      requireWritable();
       const db = readLocal();
       const row = {
         id: u.id || uid("u_"),
@@ -355,6 +380,7 @@ function makeLocalStore(): Store {
         .map(normalizeDoc);
     },
     async upsertDocuments(docs) {
+      requireWritable();
       const db = readLocal();
       const out: DocRecord[] = [];
       for (const d of docs) {
@@ -368,6 +394,7 @@ function makeLocalStore(): Store {
       return out;
     },
     async deleteDocument(ownerId, id) {
+      requireWritable();
       const db = readLocal();
       const d = db.documents.find((x) => x.owner_id === ownerId && x.id === id);
       if (d) {
@@ -385,6 +412,7 @@ function makeLocalStore(): Store {
         .sort((a, b) => String(a.kind).localeCompare(String(b.kind)) || Number(a.position) - Number(b.position));
     },
     async upsertParams(params) {
+      requireWritable();
       const db = readLocal();
       for (const p of params) {
         const i = db.params.findIndex(
@@ -397,6 +425,7 @@ function makeLocalStore(): Store {
       await writeLocal(db);
     },
     async deleteParam(ownerId, id) {
+      requireWritable();
       const db = readLocal();
       db.params = db.params.filter((p) => !(p.owner_id === ownerId && p.id === id));
       await writeLocal(db);
@@ -408,6 +437,7 @@ function makeLocalStore(): Store {
       return { owner_id: ownerId, data: (s?.data as Row) || {}, updated_at: toISO(s?.updated_at) };
     },
     async saveSettings(ownerId, data) {
+      requireWritable();
       const db = readLocal();
       const i = db.settings.findIndex((x) => x.owner_id === ownerId);
       const row = { owner_id: ownerId, data, updated_at: nowISO() };
@@ -417,6 +447,7 @@ function makeLocalStore(): Store {
     },
 
     async saveLocalFile(key, buf, mime) {
+      requireWritable();
       ensureDirs();
       const safe = key.replace(/[^a-zA-Z0-9._\-/]/g, "_");
       const full = path.join(UPLOAD_DIR, safe);

@@ -1,0 +1,29 @@
+# dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# compilacion de Next.js
+.next/
+out/
+build/
+dist/
+
+# Vercel
+.vercel/
+
+# datos de desarrollo (modo local sin DATABASE_URL)
+.data/
+
+# variables de entorno
+.env
+.env*.local
+
+# sistema
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
