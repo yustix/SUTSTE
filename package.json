@@ -1,0 +1,37 @@
+{
+  "name": "sut-ste",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SUT STE - Gestión documental: resumen automático, archivo por parámetros y sugerencia de respuesta.",
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0 -p 3000",
+    "build": "next build",
+    "start": "next start -H 0.0.0.0 -p 3000",
+    "db:migrate": "node scripts/migrate.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "test:engine": "tsx scripts/test-engine.ts",
+    "test:ocr": "tsx scripts/test-ocr.ts",
+    "muestras": "python3 scripts/generar-muestras.py && python3 scripts/generar-escaneado.py"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "@vercel/blob": "^2.8.0",
+    "bcryptjs": "^3.0.2",
+    "fflate": "^0.8.2",
+    "jose": "^5.9.6",
+    "nanoid": "^5.0.9",
+    "next": "^15.5.25",
+    "pdfjs-dist": "^4.10.38",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "sharp": "^0.34.0",
+    "tesseract.js": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "tsx": "^4.23.13",
+    "typescript": "^5.6.0"
+  }
+}
