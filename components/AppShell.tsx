@@ -49,6 +49,7 @@ export function AppShell() {
   const [boot, setBoot] = useState<"loading" | "login" | "ready">("loading");
   const [needsSetup, setNeedsSetup] = useState(false);
   const [backend, setBackend] = useState("");
+  const [bootWarning, setBootWarning] = useState("");
   const [user, setUser] = useState<{ email: string; name: string } | null>(null);
 
   const [docs, setDocs] = useState<DocRecord[]>([]);
@@ -83,6 +84,7 @@ export function AppShell() {
         const sys = await fetch("/api/system").then((r) => r.json());
         if (!alive) return;
         setBackend(sys.backend);
+        setBootWarning(typeof sys.warning === "string" ? sys.warning : "");
         if (!sys.authenticated) {
           setNeedsSetup(Boolean(sys.needsSetup));
           setBoot("login");
@@ -244,7 +246,7 @@ export function AppShell() {
         </div>
       );
     }
-    return <AuthGate needsSetup={needsSetup} backend={backend} onAuthenticated={() => void afterLogin()} />;
+    return <AuthGate needsSetup={needsSetup} backend={backend} warning={bootWarning} onAuthenticated={() => void afterLogin()} />;
   }
 
   const selected = docs.find((d) => d.id === selectedId) || null;

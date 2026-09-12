@@ -4,6 +4,8 @@ PWA de gestión documental: subes un documento, obtienes un resumen con la infor
 
 Diseño minimalista en tonos azules, sin emojis, responsivo e instalable en PC y móvil con datos consistentes entre dispositivos.
 
+> **¿Heredaste este proyecto?** Empieza por **[GUIA.md](GUIA.md)**: qué hace la app, cómo funciona por dentro, con qué programas se trabaja, cómo modificarla, cómo verificarla y por qué está desplegada en GitHub + Vercel. Para publicarla: **[DESPLIEGUE.md](DESPLIEGUE.md)**.
+
 ---
 
 ## Vercel + Neon: sí es viable
@@ -72,6 +74,8 @@ npx tsx scripts/test-engine.ts        # imprime resumen, clasificación y sugere
 ---
 
 ## Publicar en Vercel + Neon (sincronización real PC ↔ móvil)
+
+> Paso a paso con una comprobación en cada etapa (Neon, tablas, Blob, variables y primer acceso): **[DESPLIEGUE.md](DESPLIEGUE.md)**. Si la URL del proyecto responde 404, revisa primero que el despliegue incluya `app/layout.tsx`, `app/page.tsx` y `app/globals.css`.
 
 ### 1. Repositorio
 
